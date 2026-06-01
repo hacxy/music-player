@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+/* Apple Music 风格深色主题 */
+:root {
+  --color-background: #000000;
+  --color-surface: #1C1C1E;
+  --color-surface-elevated: #2C2C2E;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #8E8E93;
+  --color-accent: #FA2D48;
+  --color-accent-light: #FF375F;
+}
+
+/* 全局重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  height: 100vh;
+}
+
+/* 毛玻璃效果 */
+.glass-effect {
+  background: rgba(28, 28, 30, 0.8);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+}
+
+/* 逐字高亮歌词样式 */
+.lyrics-token {
+  background: linear-gradient(
+    to right,
+    #FFFFFF var(--progress, 0%),
+    rgba(255, 255, 255, 0.3) var(--progress, 0%)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 歌词容器滚动 */
+.lyrics-container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.lyrics-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* 进度条样式 */
+.progress-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.progress-slider:hover::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+.progress-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    #FFFFFF var(--slider-progress, 0%),
+    rgba(255, 255, 255, 0.2) var(--slider-progress, 0%)
+  );
+  border-radius: 2px;
+}
+
+/* 音量滑块 */
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    #FFFFFF var(--volume-progress, 0%),
+    rgba(255, 255, 255, 0.2) var(--volume-progress, 0%)
+  );
+  border-radius: 2px;
+}
+
+/* 歌词行样式 */
+.lyrics-line {
+  padding: 8px 0;
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease-out;
+  text-align: center;
+}
+
+.lyrics-line.past {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.lyrics-line.active {
+  font-size: 26px;
+  font-weight: 600;
+  color: #FFFFFF;
+  transform: scale(1.02);
+}

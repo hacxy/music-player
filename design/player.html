@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Player - Apple Music Style</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      background: #000000;
+      color: #FFFFFF;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 主布局 */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .main-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* 左侧歌曲列表 */
+    .sidebar {
+      width: 300px;
+      background: #1C1C1E;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      font-size: 22px;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .song-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .song-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .song-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .song-item.active {
+      background: rgba(250, 45, 72, 0.15);
+    }
+
+    .song-cover {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      flex-shrink: 0;
+    }
+
+    .song-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .song-title {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-item.active .song-title {
+      color: #FA2D48;
+    }
+
+    .song-artist {
+      font-size: 12px;
+      color: #8E8E93;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-duration {
+      font-size: 12px;
+      color: #8E8E93;
+      flex-shrink: 0;
+    }
+
+    /* 右侧主内容区 */
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      padding: 40px;
+      background: linear-gradient(180deg, #1a1a2e 0%, #000000 100%);
+    }
+
+    /* 封面 */
+    .cover-container {
+      width: 280px;
+      height: 280px;
+      margin-bottom: 40px;
+      flex-shrink: 0;
+    }
+
+    .cover-image {
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #FA2D48 0%, #FF6B6B 50%, #4ECDC4 100%);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    /* 歌词区域 */
+    .lyrics-container {
+      flex: 1;
+      width: 100%;
+      max-width: 500px;
+      overflow-y: auto;
+      padding: 20px 0;
+      scrollbar-width: none;
+    }
+
+    .lyrics-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .lyrics-line {
+      padding: 8px 0;
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease-out;
+      text-align: center;
+    }
+
+    .lyrics-line.past {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .lyrics-line.active {
+      font-size: 26px;
+      font-weight: 600;
+      color: #FFFFFF;
+      transform: scale(1.02);
+    }
+
+    /* 逐字高亮效果 */
+    .lyrics-line.active .word {
+      background: linear-gradient(
+        to right,
+        #FFFFFF var(--progress, 0%),
+        rgba(255, 255, 255, 0.3) var(--progress, 0%)
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* 底部播放控制栏 */
+    .bottom-bar {
+      height: 80px;
+      background: rgba(28, 28, 30, 0.8);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 20px;
+    }
+
+    /* 底部栏 - 歌曲信息 */
+    .now-playing-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 250px;
+      flex-shrink: 0;
+    }
+
+    .now-playing-cover {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #FA2D48 0%, #FF6B6B 50%, #4ECDC4 100%);
+    }
+
+    .now-playing-text {
+      min-width: 0;
+    }
+
+    .now-playing-title {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .now-playing-artist {
+      font-size: 11px;
+      color: #8E8E93;
+    }
+
+    /* 底部栏 - 播放控制 */
+    .player-controls {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-buttons {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .control-btn {
+      background: none;
+      border: none;
+      color: #FFFFFF;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .control-btn.play-btn {
+      width: 36px;
+      height: 36px;
+      background: #FFFFFF;
+      color: #000000;
+    }
+
+    .control-btn.play-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* 进度条 */
+    .progress-container {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .progress-time {
+      font-size: 11px;
+      color: #8E8E93;
+      width: 40px;
+      text-align: center;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #FFFFFF;
+      border-radius: 2px;
+      width: 35%;
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background: #FFFFFF;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .progress-bar:hover .progress-fill::after {
+      opacity: 1;
+    }
+
+    /* 底部栏 - 音量控制 */
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 150px;
+      flex-shrink: 0;
+    }
+
+    .volume-btn {
+      background: none;
+      border: none;
+      color: #FFFFFF;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .volume-bar {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .volume-fill {
+      height: 100%;
+      background: #FFFFFF;
+      border-radius: 2px;
+      width: 70%;
+    }
+
+    /* SVG 图标 */
+    .icon {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .icon-sm {
+      width: 16px;
+      height: 16px;
+    }
+
+    .icon-lg {
+      width: 24px;
+      height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="main-content">
+      <!-- 左侧歌曲列表 -->
+      <div class="sidebar">
+        <div class="sidebar-header">音乐库</div>
+        <div class="song-list">
+          <div class="song-item active">
+            <div class="song-cover"></div>
+            <div class="song-info">
+              <div class="song-title">星河漫步</div>
+              <div class="song-artist">AI 歌手</div>
+            </div>
+            <div class="song-duration">3:05</div>
+          </div>
+          <div class="song-item">
+            <div class="song-cover" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"></div>
+            <div class="song-info">
+              <div class="song-title">夜的钢琴曲</div>
+              <div class="song-artist">纯音乐</div>
+            </div>
+            <div class="song-duration">4:22</div>
+          </div>
+          <div class="song-item">
+            <div class="song-cover" style="background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)"></div>
+            <div class="song-info">
+              <div class="song-title">晴天</div>
+              <div class="song-artist">周杰伦</div>
+            </div>
+            <div class="song-duration">4:29</div>
+          </div>
+          <div class="song-item">
+            <div class="song-cover" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)"></div>
+            <div class="song-info">
+              <div class="song-title">起风了</div>
+              <div class="song-artist">买辣椒也用券</div>
+            </div>
+            <div class="song-duration">5:12</div>
+          </div>
+          <div class="song-item">
+            <div class="song-cover" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)"></div>
+            <div class="song-info">
+              <div class="song-title">光年之外</div>
+              <div class="song-artist">邓紫棋</div>
+            </div>
+            <div class="song-duration">3:56</div>
+          </div>
+          <div class="song-item">
+            <div class="song-cover" style="background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%)"></div>
+            <div class="song-info">
+              <div class="song-title">稻香</div>
+              <div class="song-artist">周杰伦</div>
+            </div>
+            <div class="song-duration">3:42</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧主内容区 -->
+      <div class="content">
+        <!-- 封面大图 -->
+        <div class="cover-container">
+          <div class="cover-image"></div>
+        </div>
+
+        <!-- 歌词区域 -->
+        <div class="lyrics-container">
+          <div class="lyrics-line past">窗外的星星一颗一颗亮起来</div>
+          <div class="lyrics-line past">我闭上眼睛许下一个小期待</div>
+          <div class="lyrics-line past">风吹过发梢带着夏天的味道</div>
+          <div class="lyrics-line past">这一刻时间好像放慢了节拍</div>
+          <div class="lyrics-line active">
+            <span class="word" style="--progress: 100%">你</span><span class="word" style="--progress: 100%">说</span><span class="word" style="--progress: 80%">世</span><span class="word" style="--progress: 60%">界</span><span class="word" style="--progress: 40%">很</span><span class="word" style="--progress: 20%">大</span><span class="word" style="--progress: 0%">梦</span><span class="word" style="--progress: 0%">也</span><span class="word" style="--progress: 0%">很</span><span class="word" style="--progress: 0%">远</span>
+          </div>
+          <div class="lyrics-line">可我不想只站在原点</div>
+          <div class="lyrics-line">带我去看星河漫步</div>
+          <div class="lyrics-line">穿过云层的迷雾</div>
+          <div class="lyrics-line">每一步都是礼物</div>
+          <div class="lyrics-line">就算跌倒也不认输</div>
+          <div class="lyrics-line">带我去看星河漫步</div>
+          <div class="lyrics-line">让流星划过夜幕</div>
+          <div class="lyrics-line">你就是我的地图</div>
+          <div class="lyrics-line">带我找到回家的路</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部播放控制栏 -->
+    <div class="bottom-bar">
+      <!-- 歌曲信息 -->
+      <div class="now-playing-info">
+        <div class="now-playing-cover"></div>
+        <div class="now-playing-text">
+          <div class="now-playing-title">星河漫步</div>
+          <div class="now-playing-artist">AI 歌手</div>
+        </div>
+      </div>
+
+      <!-- 播放控制 -->
+      <div class="player-controls">
+        <div class="control-buttons">
+          <button class="control-btn">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
+          <button class="control-btn play-btn">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
+          <button class="control-btn">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="progress-container">
+          <span class="progress-time">1:05</span>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <span class="progress-time">3:05</span>
+        </div>
+      </div>
+
+      <!-- 音量控制 -->
+      <div class="volume-control">
+        <button class="volume-btn">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+          </svg>
+        </button>
+        <div class="volume-bar">
+          <div class="volume-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
